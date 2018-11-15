@@ -1,0 +1,271 @@
+#include <LiquidCrystal.h>
+const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2; //Vairables for LCD
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7); //Make LCD vaiarble
+int ledKnock = 52; //LED for knock sensor
+int knockSensor = A13; //Knock Sensor
+byte knockValue = 0;
+byte value = 0;
+int nCount = 0;
+int nInc = 0;
+int trans1 = 31; 
+int trans2 = 33;
+int fMotor = 35; //Motors for light sensor, curtains
+int bMotor = 37;
+int ledRed = 39; //LED's for light sensor
+int ledBlue = 24;
+int ledGreen = 41;
+int photo = A7; //Photoresistor for light detection
+int nValueLight = 0;
+int nState = 0;
+int nAttempt = 1;
+int nSens = A0;
+int button1 = 43; //Buttons for manuel mode
+int button2 = 45;
+int button3 = 47;
+int button4 = 49;
+int button5 = 51;
+int button6 = 53;
+int nScore = 0;
+int buttonState1 = LOW;
+int buttonState2 = LOW;
+int buttonState3 = LOW;
+int buttonState4 = LOW;
+int buttonState5 = LOW;
+int buttonState6 = LOW;
+int buttonState1Prev = LOW;
+int buttonState2Prev = LOW;
+int buttonState3Prev = LOW;
+int buttonState4Prev = LOW;
+int buttonState5Prev = LOW;
+int buttonState6Prev = LOW;
+long t = millis();
+int nAuto = 0;
+
+void setup() {
+  pinMode(ledKnock, OUTPUT); 
+  lcd.begin(16, 2);
+  pinMode(trans1, OUTPUT); //Make motors output
+  pinMode(trans2, OUTPUT);
+  pinMode(fMotor, OUTPUT);
+  pinMode(bMotor, OUTPUT);
+  pinMode(ledRed, OUTPUT);
+  pinMode(ledGreen, OUTPUT);
+  pinMode(ledBlue, OUTPUT);
+  pinMode(photo, INPUT); //Make sensors inputs
+  pinMode(button1, INPUT);
+  pinMode(button2, INPUT);
+  pinMode(button3, INPUT);
+  pinMode(button4, INPUT);
+  pinMode(button5, INPUT);
+  pinMode(button6, INPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  buttonState1 = digitalRead(button1); //Read each button
+  buttonState2 = digitalRead(button2);
+  buttonState3 = digitalRead(button3);
+  buttonState4 = digitalRead(button4);
+  buttonState5 = digitalRead(button5);
+  buttonState6 = digitalRead(button6);
+  while (nInc != 1) { //During the startup
+    lcd.clear();
+    lcd.print("Enter Knock Seq!");
+    while ((t / nAttempt) <= 8000) {
+      t = millis();
+      knockValue = analogRead(knockSensor);
+      if (knockValue >= 100) { //If the arduino detects a knock
+        lcd.clear();
+        lcd.print("KNOCK!");
+        lcd.setCursor(0,1);
+        lcd.print(nCount);
+        digitalWrite(ledKnock, HIGH);
+        delay(50);
+        digitalWrite(ledKnock, LOW);
+        delay(50);
+        nCount++; //Add one to count
+        delay(200);
+      } 
+    }
+    if (nCount >= 20) { //If the count gets to 20 within 8 seconds, allow the user it
+      lcd.clear();
+      lcd.print("You're In!");
+      nInc++;
+      break; //Break out of the attempts and go into the main code
+    }
+    if (nCount < 20) { //If the user fails, then redo the process
+      lcd.clear();
+      lcd.print("Try Again");
+      nCount = 0;
+      nAttempt++;
+      break;
+    }
+  }
+  if (nAuto == 0) { //Automatically start in automatic mode
+  value = analogRead(photo);
+  if (value <= 180 && value > 120) { //If the lighting is high
+      nState = 0;
+  }
+  else if (value <= 120) { //If the lighting is low
+      nState = 1;
+  }
+  else { //Default setting
+      digitalWrite(ledBlue, HIGH);
+      digitalWrite(ledRed, LOW);
+      digitalWrite(ledGreen, LOW);
+      digitalWrite(fMotor, LOW);
+      digitalWrite(bMotor, LOW);
+  }
+    if (nState == 1) { //If the lighting is low, turn on the green light and open the blinds
+      if (nCount == 0) {
+        digitalWrite(ledBlue, LOW);
+        digitalWrite(ledRed, LOW);
+        digitalWrite(ledGreen, HIGH);
+        digitalWrite(fMotor, HIGH);
+        delay(5000);
+        nCount++;
+      }
+    }
+    else {
+      digitalWrite(fMotor, LOW);
+      delay(100);
+      nCount = 0;
+    }
+    if (nState == 0) { //If the lighting is high, turn on the red light and close the blinds
+      if (nCount == 0) {
+        digitalWrite(ledGreen, LOW);
+        digitalWrite(ledBlue, LOW);
+        digitalWrite(ledRed, HIGH);
+        digitalWrite(bMotor, HIGH);
+        delay(5000);
+        nCount++;
+      }
+    }
+    else {
+      digitalWrite(bMotor, LOW);
+      delay(100);
+      nCount = 0;
+    }
+    int reading = analogRead(nSens); //Read the temperature and convert it celcius
+    float voltage = reading * 5.0;
+    voltage /= 1024.0; 
+    float temperatureC = (voltage - 0.5) * 100; 
+    if (temperatureC >= 26) { //If the temperature is over 26 degrees, turn on the air conditioning motor
+      digitalWrite(trans2, LOW);
+      digitalWrite(trans1, HIGH);
+    }
+    else if (temperatureC <= 18) { //If the temperature is under 18 degrees, turn on the heating motor 
+      digitalWrite(trans1, LOW);
+      digitalWrite(trans2, HIGH);
+    }
+    else { //If it's between 18 and 25 then turn both of them off
+      digitalWrite(trans1, LOW);
+      digitalWrite(trans2, LOW);
+    }
+    if (buttonState6 == HIGH) { //If the user clicks the manuel mode
+        lcd.clear();
+        lcd.print("Disabling");
+        lcd.setCursor(0,1);
+        lcd.print("AUTOMATIC!");
+        digitalWrite(ledRed, LOW); //Turn everything off
+        digitalWrite(ledGreen, LOW);
+        digitalWrite(bMotor, LOW);
+        digitalWrite(fMotor, LOW);
+        digitalWrite(trans1, LOW);
+        digitalWrite(trans2, LOW);
+        digitalWrite(ledBlue, LOW);
+        nAuto = 1; //Change the mode
+        buttonState6 = LOW;
+  }
+}
+  else if (nAuto == 1) {
+    if (buttonState1 == HIGH) { //This function is for dark light adjustment
+      lcd.clear();
+      lcd.print("Turning on");
+      lcd.setCursor(0,1);
+      lcd.print("Dark Light Adjustment");
+      digitalWrite(ledBlue, LOW);
+      digitalWrite(ledGreen, LOW);
+      digitalWrite(bMotor, LOW);
+      digitalWrite(trans1, LOW);
+      digitalWrite(trans2, LOW);
+      digitalWrite(fMotor, HIGH);
+      digitalWrite(ledRed, HIGH);
+      buttonState1 = LOW;
+    }
+    else if (buttonState2 == HIGH) { //This function is for light light adjustment
+      lcd.clear();
+      lcd.print("Turning on");
+      lcd.setCursor(0,1);
+      lcd.print("Light Light Adjustment");
+      digitalWrite(ledRed, LOW);
+      digitalWrite(ledBlue, LOW);
+      digitalWrite(fMotor, LOW);
+      digitalWrite(trans1, LOW);
+      digitalWrite(trans2, LOW);
+      digitalWrite(fMotor, LOW);
+      digitalWrite(bMotor, HIGH);
+      digitalWrite(ledGreen, HIGH);
+      buttonState2 = LOW;
+    }
+    else if (buttonState3 == HIGH) { //This function is for air conditioning
+      lcd.clear();
+      lcd.print("Turning on");
+      lcd.setCursor(0,1);
+      lcd.print("A/C");
+      digitalWrite(ledRed, LOW);
+      digitalWrite(ledGreen, LOW);
+      digitalWrite(ledBlue, LOW);
+      digitalWrite(bMotor, LOW);
+      digitalWrite(fMotor, LOW);    
+      digitalWrite(trans2, LOW);
+      digitalWrite(trans1, HIGH);
+      buttonState3 = LOW;
+    }
+    else if (buttonState4 == HIGH) { //This function is for heating
+      lcd.clear();
+      lcd.print("Turning on");
+      lcd.setCursor(0,1);
+      lcd.print("Heating");
+      digitalWrite(ledRed, LOW);
+      digitalWrite(ledGreen, LOW);
+      digitalWrite(ledBlue, LOW);
+      digitalWrite(bMotor, LOW);
+      digitalWrite(fMotor, LOW);    
+      digitalWrite(trans1, LOW);
+      digitalWrite(trans2, HIGH);
+      buttonState4 = LOW;
+    }
+    else if (buttonState5 == HIGH) { //This function is for perfect lighting
+      lcd.clear();
+      lcd.print("Turning on");
+      lcd.setCursor(0,1);
+      lcd.print("Perfect Lighting");
+      digitalWrite(ledRed, LOW);
+      digitalWrite(ledGreen, LOW);
+      digitalWrite(bMotor, LOW);
+      digitalWrite(fMotor, LOW);
+      digitalWrite(trans1, LOW);
+      digitalWrite(trans2, LOW);
+      digitalWrite(ledBlue, HIGH);
+      buttonState5 = LOW;
+    }
+    else if (buttonState6 == HIGH) { //This function for re enabling the automatic mode
+        lcd.clear();
+        lcd.print("Enabling");
+        lcd.setCursor(0,1);
+        lcd.print("AUTOMATIC!");
+        digitalWrite(ledRed, LOW);
+        digitalWrite(ledGreen, LOW);
+        digitalWrite(bMotor, LOW);
+        digitalWrite(fMotor, LOW);
+        digitalWrite(trans1, LOW);
+        digitalWrite(trans2, LOW);
+        digitalWrite(ledBlue, LOW);
+        nAuto = 0;
+        buttonState6 = LOW;
+    }
+  }
+}
+
+
