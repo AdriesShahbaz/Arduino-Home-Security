@@ -1,7 +1,9 @@
 # Arduino-Home-Security
 A collection of circuits and devices that are being used to simulate a home security/comfort system
 
-This was my main project for my grade 11 computer technolagy class where I succesfully recreated a mock home security/comfort system. How does it work? The user will first have to get into the system by completing a successful knock sequence. The user is given 3 tries before the system locks them out temporarly. If the user successfully completes the knock sequence, then they can accsess the system. The user is given the option between two modes; an automatic mode, and a manuel mode. For the automatic mode, all fuctions be automatically completed via the sensors. For example, if the temperature is below 18 degrees, then the heating motor will automatically turn on. If the temperature is over 25 degrees, then the air conditioning motor will automatically turn on. If the temperature is in between 18 and 25 then both motors will be turned off. Also in automatic mode, if the photoresistor detects a low lighting, then it will automatically turn on a blue light and using a motor, open the blinds. If it detects a high light, then it will shut off the light and close the blinds with the motor. For the manuel mode, these functions are left to the user. With the simple push of a push button, the user can decide if they want to air conditioning motor on/off, the heating motor on/off or neither. This extends to the lighting feauture as well. The user can decide if they want a bright lit room, or a dark room.
+This was my main project for my grade 11 computer technolagy class where I succesfully recreated a mock home security/comfort system. How does it work? The user will first have to get into the system by completing a successful knock sequence. The user is given 3 tries before the system locks them out temporarly. If the user successfully completes the knock sequence, then they can accsess the system. The user is given the option between two modes; an automatic mode, and a manuel mode. For the automatic mode, all fuctions be automatically completed via the sensors. For example, if the temperature is below 18 degrees, then the heating motor will automatically turn on. If the temperature is over 25 degrees, then the air conditioning motor will automatically turn on. If the temperature is in between 18 and 25 then both motors will be turned off. Also in automatic mode, if the photoresistor detects a low lighting, then it will automatically turn on a blue light and using a motor, open the blinds. If it detects a high light, then it will shut off the light and close the blinds with the motor. For the manuel mode, these functions are left to the user. With the simple push of a push button, the user can decide if they want to air conditioning motor on/off, the heating motor on/off or neither. This extends to the lighting feauture as well. The user can decide if they want a bright lit room, or a dark room. This project was made in order to learn about new components such as IR reciever and photoresistor and implement them into a project.
+
+Side Note: I could not find a viable IR library that was compatable with an Arduino Mega. Due to this misfortune, I ended up using buttons for my final project but was still able to learn how the IR worked and tested using it with a breadboard.
 
 Components:
 - Infra Red Reciever
@@ -9,7 +11,7 @@ Components:
 - Photoresistor
 - Temperature Sensor
 - 16X2 LCD
-- Arduino
+- Arduino (Mega)
 - Copper Wires
 - Piezo Disk
 - Push buttons
