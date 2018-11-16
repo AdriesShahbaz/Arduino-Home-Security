@@ -16,7 +16,7 @@ Components:
 - Piezo Disk
 - Push buttons
 - LED's
-
+- AMS1117 1A voltage converter
 
 Real Life Applications:
 With this project, I have laid out the groundworks, or skeleton for an actual home comfort system along the lines of an Alexa. Given more time and more resources, I believe I could successfully create a real functioning home security/comfor system.
